@@ -15,6 +15,10 @@ const (
 
 func main() {
 
+	// reading from console
+	reader := NewReader()
+	reader.Read()
+
 	commands := make([]Command, 0)
 
 	for i := 0; i < 2; i++ {
@@ -24,7 +28,7 @@ func main() {
 	}
 
 	for _, el := range commands {
-		fmt.Println(el)
+		fmt.Println(el.FormatString())
 	}
 
 }

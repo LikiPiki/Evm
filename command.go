@@ -4,6 +4,14 @@ import (
 	"fmt"
 )
 
+const (
+	CLC_SPACE    = 0
+	CLC_KOP      = 1
+	CLC_REGISTER = 2
+	CLC_MEMORY   = 3
+	CLC_COUNTING = 4
+)
+
 type Command struct {
 	Start int
 	End   int
@@ -23,20 +31,20 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	memOrReg := getMemOrReg()
 	if clc == 0 {
 		c.Start = 0
-		c.Clc = append(c.Clc, 1, 2)
+		c.Clc = append(c.Clc, CLC_KOP, CLC_REGISTER)
 		if memOrReg == 1 {
-			c.Clc = append(c.Clc, 2)
+			c.Clc = append(c.Clc, CLC_REGISTER)
 		} else {
-			mem := createClc(8, 3)
+			mem := createClc(8, CLC_MEMORY)
 			c.Clc = append(c.Clc, mem...)
 		}
 		if cmdType == 1 {
-			c.Clc = append(c.Clc, 4)
+			c.Clc = append(c.Clc, CLC_COUNTING)
 		} else {
-			res := createClc(4, 4)
+			res := createClc(4, CLC_COUNTING)
 			c.Clc = append(c.Clc, res...)
 		}
-		c.Clc = append(c.Clc, 5)
+		c.Clc = append(c.Clc, CLC_MEMORY)
 		c.End = len(c.Clc) - 1
 		return
 	}
@@ -46,17 +54,11 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	start := clc
 	for !fl {
 		find := true
-		fmt.Println("------------------------------------")
-		fmt.Println("start", start)
-		fmt.Println("------------------------------------")
 		for i, _ := range mem {
 			for _, cmd := range cmds {
-				fmt.Println("i is", start+i)
-				fmt.Println(cmd)
 				if cmd.In(start+i) == true {
 					curClc := cmd.Clc[start-cmd.Start+i]
-					fmt.Printf("Check %d %d \n", start-cmd.Start+i, curClc)
-					if (curClc == 3) || (curClc == 5) {
+					if curClc == 3 {
 						find = false
 					}
 				}
@@ -73,9 +75,8 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	c.Clc = append(c.Clc, mem...)
 	res := createClc(4, 4)
 	c.Clc = append(c.Clc, res...)
-	c.Clc = append(c.Clc, 5)
+	c.Clc = append(c.Clc, 3)
 	c.End = len(c.Clc) - 1
-	fmt.Println("start is ", start)
 }
 func (c Command) SetEnd() {
 	c.End = c.Start + len(c.Clc)
@@ -88,10 +89,12 @@ func (c Command) In(clc int) bool {
 	return false
 }
 
-func (c Command) Format() string {
-	result := fmt.Sprintf("%d %d\n", c.Start, c.End)
-	for _, el := range c.Clc {
-		result += fmt.Sprintf("%d ", el)
+func (c Command) FormatString() (str string) {
+	for i := 0; i < c.Start; i++ {
+		str += "-"
 	}
-	return result
+	for _, el := range c.Clc {
+		str += fmt.Sprintf("%d", el)
+	}
+	return str
 }
