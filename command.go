@@ -53,25 +53,18 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	fl := false
 	start := len(c.Clc) + 1
 	for !fl {
-		fmt.Println("-----------")
-		fmt.Println(start)
-		fmt.Println("-----------")
 		find := true
 		for i, _ := range mem {
-			fmt.Println("\\\\\\\\\\\\\\\\\\")
 			for _, cmd := range cmds {
 				if cmd.In(start+i) == true {
-					curClc := cmd.Clc[start-cmd.Start+i]
-					fmt.Println("current command is", cmd.Start, " ", cmd.End, " ", curClc, "index")
+					curClc := cmd.Clc[start+i-cmd.Start]
 					if curClc == 3 {
 						find = false
 					}
 				}
 			}
 		}
-		fmt.Println("ended", find)
 		if find {
-			fmt.Println("finded", start)
 			fl = true
 			break
 		} else {
@@ -79,17 +72,36 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 		}
 	}
 	clcInCurrent := start - c.Start
-	fmt.Println("Appenidng", clcInCurrent-len(c.Clc))
 	c.AppendCommand(clcInCurrent-len(c.Clc), CLC_SPACE)
 	c.Clc = append(c.Clc, mem...)
 	res := createClc(4, 4)
 	c.Clc = append(c.Clc, res...)
 	c.Clc = append(c.Clc, 3)
-	c.End = len(c.Clc)
+	c.SetEnd()
 }
 
-func (c Command) SetEnd() {
-	c.End = c.Start + len(c.Clc)
+func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
+	if clc == 0 {
+		c.Clc = append(c.Clc, CLC_KOP, CLC_REGISTER)
+		if memOrReg == 1 {
+			c.Clc = append(c.Clc, CLC_REGISTER)
+		} else {
+			mem := createClc(8, CLC_MEMORY)
+			c.Clc = append(c.Clc, mem...)
+		}
+		if cmdType == 1 {
+			c.Clc = append(c.Clc, CLC_COUNTING)
+		} else {
+			res := createClc(4, CLC_COUNTING)
+			c.Clc = append(c.Clc, res...)
+		}
+		c.Clc = append(c.Clc, CLC_MEMORY)
+		c.End = len(c.Clc)
+	}
+}
+
+func (c *Command) SetEnd() {
+	c.End = c.Start + len(c.Clc) - 1
 }
 
 func (c Command) In(clc int) bool {

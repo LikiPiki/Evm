@@ -21,7 +21,7 @@ func main() {
 
 	commands := make([]Command, 0)
 
-	for i := 0; i < 17; i++ {
+	for i := 0; i < 30; i++ {
 		cmd := NewCommand(i)
 		cmd.SetCommand(commands, i)
 		commands = append(commands, cmd)
@@ -31,9 +31,4 @@ func main() {
 		// fmt.Println(el)
 		fmt.Println(el.FormatString())
 	}
-	for _, el := range commands {
-		fmt.Println(el)
-		// fmt.Println(el.FormatString())
-	}
-
 }
