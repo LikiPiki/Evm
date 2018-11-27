@@ -21,7 +21,7 @@ func main() {
 
 	commands := make([]Command, 0)
 
-	for i := 0; i < 30; i++ {
+	for i := 0; i < 10; i++ {
 		cmd := NewCommand(i)
 		cmd.SetCommand(commands, i)
 		commands = append(commands, cmd)
