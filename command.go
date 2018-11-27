@@ -92,7 +92,7 @@ func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
 			mem := createClc(commandMemoryCount, CLC_MEMORY)
 			c.Clc = append(c.Clc, mem...)
 		}
-		if cmdType == 1 {
+		if cmdType == FIRST_TYPE {
 			c.Clc = append(c.Clc, CLC_COUNTING)
 		} else {
 			res := createClc(commandCounting, CLC_COUNTING)

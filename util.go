@@ -2,11 +2,12 @@ package main
 
 import (
 	"math/rand"
+	"time"
 )
 
 const (
-	MEMORY_TYPE   = 1
-	REGISTER_TYPE = 2
+	MEMORY_TYPE   = 2
+	REGISTER_TYPE = 1
 	FIRST_TYPE    = 1
 	SECOND_TYPE   = 2
 )
@@ -14,6 +15,7 @@ const (
 func GetRand(percent int) int {
 	// 1 - memory
 	// 2 - registr
+	rand.Seed(time.Now().UTC().UnixNano())
 	num := rand.Int() % 100
 	if num < percent {
 		return MEMORY_TYPE
@@ -30,11 +32,11 @@ func createClc(n, tp int) []int {
 }
 
 func getCommandType() int {
-	return GetRand(commandType * 100)
+	return GetRand(int(commandType * 100))
 }
 
 func getMemOrReg() int {
-	return GetRand(memoryVer * 100)
+	return GetRand(int(memoryVer * 100))
 }
 
 func CountArrangeTime(commands []Command) (result int) {
