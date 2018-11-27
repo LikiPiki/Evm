@@ -29,8 +29,8 @@ func NewCommand(start int) Command {
 func (c *Command) SetCommand(cmds []Command, clc int) {
 	cmdType := getCommandType()
 	memOrReg := getMemOrReg()
+	c.Start = clc
 	if clc == 0 {
-		c.Start = 0
 		c.Clc = append(c.Clc, CLC_KOP, CLC_REGISTER)
 		if memOrReg == 1 {
 			c.Clc = append(c.Clc, CLC_REGISTER)
@@ -51,33 +51,43 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	c.Clc = append(c.Clc, 1, 2)
 	mem := createClc(4, 3)
 	fl := false
-	start := clc
+	start := len(c.Clc) + 1
 	for !fl {
+		fmt.Println("-----------")
+		fmt.Println(start)
+		fmt.Println("-----------")
 		find := true
 		for i, _ := range mem {
+			fmt.Println("\\\\\\\\\\\\\\\\\\")
 			for _, cmd := range cmds {
 				if cmd.In(start+i) == true {
 					curClc := cmd.Clc[start-cmd.Start+i]
+					fmt.Println("current command is", cmd.Start, " ", cmd.End, " ", curClc, "index")
 					if curClc == 3 {
 						find = false
 					}
 				}
 			}
 		}
+		fmt.Println("ended", find)
 		if find {
+			fmt.Println("finded", start)
 			fl = true
 			break
 		} else {
-			c.Clc = append(c.Clc, 0)
 			start++
 		}
 	}
+	clcInCurrent := start - c.Start
+	fmt.Println("Appenidng", clcInCurrent-len(c.Clc))
+	c.AppendCommand(clcInCurrent-len(c.Clc), CLC_SPACE)
 	c.Clc = append(c.Clc, mem...)
 	res := createClc(4, 4)
 	c.Clc = append(c.Clc, res...)
 	c.Clc = append(c.Clc, 3)
-	c.End = len(c.Clc) - 1
+	c.End = len(c.Clc)
 }
+
 func (c Command) SetEnd() {
 	c.End = c.Start + len(c.Clc)
 }
@@ -89,12 +99,25 @@ func (c Command) In(clc int) bool {
 	return false
 }
 
+func (c *Command) AppendCommand(cmdCount, cmdType int) {
+	command := createClc(cmdCount, cmdType)
+	c.Clc = append(c.Clc, command...)
+}
+
+func (c *Command) AppendCommands(command ...int) {
+	c.Clc = append(c.Clc, command...)
+}
+
 func (c Command) FormatString() (str string) {
 	for i := 0; i < c.Start; i++ {
 		str += "-"
 	}
 	for _, el := range c.Clc {
-		str += fmt.Sprintf("%d", el)
+		if el == 0 {
+			str += "-"
+		} else {
+			str += fmt.Sprintf("%d", el)
+		}
 	}
 	return str
 }

@@ -16,19 +16,24 @@ const (
 func main() {
 
 	// reading from console
-	reader := NewReader()
-	reader.Read()
+	// reader := NewReader()
+	// reader.Read()
 
 	commands := make([]Command, 0)
 
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 17; i++ {
 		cmd := NewCommand(i)
 		cmd.SetCommand(commands, i)
 		commands = append(commands, cmd)
 	}
 
 	for _, el := range commands {
+		// fmt.Println(el)
 		fmt.Println(el.FormatString())
+	}
+	for _, el := range commands {
+		fmt.Println(el)
+		// fmt.Println(el.FormatString())
 	}
 
 }
