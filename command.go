@@ -5,11 +5,14 @@ import (
 )
 
 const (
+	// clock signals types
 	CLC_SPACE    = 0
 	CLC_KOP      = 1
 	CLC_REGISTER = 2
 	CLC_MEMORY   = 3
 	CLC_COUNTING = 4
+	// commands
+	FIRST_COMMAND = 0
 )
 
 type Command struct {
@@ -30,12 +33,30 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	cmdType := getCommandType()
 	memOrReg := getMemOrReg()
 	c.Start = clc
-	if clc == 0 {
+	if clc == FIRST_COMMAND {
 		c.SetFirstCommand(cmdType, memOrReg, clc)
 		return
 	}
+
+	// entering OP_CODE and Write to register
 	c.Clc = append(c.Clc, CLC_KOP, CLC_REGISTER)
-	mem := createClc(4, 3)
+	if memOrReg == REGISTER_TYPE {
+		c.AppendCommands(CLC_REGISTER)
+	} else {
+		// for MEMORY_TYPE
+		mem := createClc(commandMemoryCount, CLC_MEMORY)
+		c.WriteToMemorySlice(mem, cmds)
+	}
+	if cmdType == FIRST_TYPE {
+		c.AppendCommands(CLC_COUNTING)
+	} else {
+		c.AppendCommand(commandCounting, CLC_COUNTING)
+	}
+	c.WriteToMemory(cmds)
+	c.SetEnd()
+}
+
+func (c *Command) WriteToMemorySlice(mem []int, cmds []Command) {
 	fl := false
 	start := len(c.Clc) + 1
 	for !fl {
@@ -60,11 +81,6 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	clcInCurrent := start - c.Start
 	c.AppendCommand(clcInCurrent-len(c.Clc), CLC_SPACE)
 	c.Clc = append(c.Clc, mem...)
-
-	res := createClc(4, 4)
-	c.Clc = append(c.Clc, res...)
-	c.WriteToMemory(cmds)
-	c.SetEnd()
 }
 
 func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
@@ -73,13 +89,13 @@ func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
 		if memOrReg == 1 {
 			c.Clc = append(c.Clc, CLC_REGISTER)
 		} else {
-			mem := createClc(8, CLC_MEMORY)
+			mem := createClc(commandMemoryCount, CLC_MEMORY)
 			c.Clc = append(c.Clc, mem...)
 		}
 		if cmdType == 1 {
 			c.Clc = append(c.Clc, CLC_COUNTING)
 		} else {
-			res := createClc(4, CLC_COUNTING)
+			res := createClc(commandCounting, CLC_COUNTING)
 			c.Clc = append(c.Clc, res...)
 		}
 		c.Clc = append(c.Clc, CLC_MEMORY)
@@ -104,6 +120,7 @@ func (c *Command) WriteToMemory(cmds []Command) {
 			fl = false
 		} else {
 			space++
+			start++
 		}
 	}
 	if space > 0 {
