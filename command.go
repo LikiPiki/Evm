@@ -52,7 +52,13 @@ func (c *Command) SetCommand(cmds []Command, clc int) {
 	} else {
 		c.AppendCommand(commandCounting, CLC_COUNTING)
 	}
-	c.WriteToMemory(cmds)
+	// final memory
+	if memOrReg == REGISTER_TYPE {
+		c.Clc = append(c.Clc, CLC_REGISTER)
+	} else {
+		mem := createClc(commandMemoryCount, CLC_MEMORY)
+		c.WriteToMemorySlice(mem, cmds)
+	}
 	c.SetEnd()
 }
 
@@ -86,7 +92,7 @@ func (c *Command) WriteToMemorySlice(mem []int, cmds []Command) {
 func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
 	if clc == 0 {
 		c.Clc = append(c.Clc, CLC_KOP, CLC_REGISTER)
-		if memOrReg == 1 {
+		if memOrReg == REGISTER_TYPE {
 			c.Clc = append(c.Clc, CLC_REGISTER)
 		} else {
 			mem := createClc(commandMemoryCount, CLC_MEMORY)
@@ -98,7 +104,12 @@ func (c *Command) SetFirstCommand(cmdType, memOrReg, clc int) {
 			res := createClc(commandCounting, CLC_COUNTING)
 			c.Clc = append(c.Clc, res...)
 		}
-		c.Clc = append(c.Clc, CLC_MEMORY)
+		if memOrReg == REGISTER_TYPE {
+			c.Clc = append(c.Clc, CLC_REGISTER)
+		} else {
+			mem := createClc(commandMemoryCount, CLC_MEMORY)
+			c.Clc = append(c.Clc, mem...)
+		}
 		c.End = len(c.Clc) - 1
 	}
 }
